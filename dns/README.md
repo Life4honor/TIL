@@ -1,6 +1,16 @@
 # DNS Configuration
 DNS Server: `<DNS Server>`
 
+## DNS 구축
+
+### Linux - bind9
+* `bind9` 설치
+```sh
+$ sudo apt-get install bind9
+```
+
+* ...
+
 ## DNS 설정
 
 ### Linux Server - Ubuntu 18.04 기준
