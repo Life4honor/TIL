@@ -1,4 +1,4 @@
-# Amazon Elatic Kubernetes Service
+# Amazon Elastic Kubernetes Service
 
 Create eks cluster with eksctl
 
@@ -43,7 +43,7 @@ Create a cluster with `eksctl create cluster` command
 $ eksctl create cluster
 ```
 
-Sample scirpt to create `vtflow` cluster with managed node group is shown below
+Sample scirpt to create `vtflow` cluster with a managed node group is shown below
 
 ```sh
 #!/bin/bash
@@ -61,7 +61,7 @@ eksctl create cluster --name $CN --region $REGION --node-type $TYPE --nodes $NOD
 
 ### Config file
 
-Create cluster based on config file with `eksctl create cluster -f cluster.yaml` command
+Create a cluster based on config file with `eksctl create cluster -f cluster.yaml` command
 
 ```yaml
 # cluster.yaml
@@ -69,8 +69,8 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: vtflow
-  region: ap-northeast-2
+  name: <ClusterName>
+  region: <Region>
 
 # Config file need to manage nodegroup explicitly
 nodeGroups:
@@ -80,17 +80,44 @@ managedNodeGroups:
   - ...
 ```
 
+Sample configuration for `vtflow` cluster with a managed node group is shown below
+
+```yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: vtflow
+  region: ap-norteast-2
+managedNodeGroups:
+  - name: managed-ng-1
+    minSize: 2
+    maxSize: 2
+    desiredCapacity: 2
+    volumeSize: 20
+    privateNetworking: true
+    instanceType: m5.large
+```
+
 ## Delete EKS Cluster
 
 ### CLI
 
-...
+Delete a cluster with `eksctl delete cluster` command
+
+```sh
+$ eksctl delete cluster -w -n vtflow -r ap-northeast-2
+```
 
 ### Config file
 
-...
+Delete a cluster based on config file with `eksctl delete cluster -w -f cluster.yaml` command
+
+```sh
+$ eksctl delete cluster -w -f cluster.yaml
+```
 
 ## Reference
 
-- [Usage](https://eksctl.io/usage/creating-and-managing-clusters/)
-- [Config file Example](https://eksctl.io/examples/reusing-iam-and-vpc/)
+- [Creating ans managing clusters](https://eksctl.io/usage/creating-and-managing-clusters/)
+- [Config file example](https://eksctl.io/examples/reusing-iam-and-vpc/)
+- [Managing nodegroups](https://eksctl.io/usage/managing-nodegroups/)
