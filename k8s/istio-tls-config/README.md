@@ -29,27 +29,100 @@ $ kubectl exec -it -n istio-system $(kubectl -n istio-system get pods -l istio=i
 
 ## Apply TLS setup on cluster
 
-[Secure Gateways - File Mount](https://istio.io/docs/tasks/traffic-management/ingress/secure-ingress-mount/)
+Configure `istio-ingressgateway` after installing `istio`
+
+### TLS Termination
 
 ```sh
-$ kubectl apply -f - <<EOF
+$ kubectl -n istio-system patch gw/istio-ingressgateway --type='merge' -p "$(cat patch.yaml)"
+```
+
+```yaml
+# 'patch.yaml' Configuration to receive HTTPS
+
+spec:
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - "*"
+      port:
+        name: https
+        number: 443
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        privateKey: /etc/istio/ingressgateway-certs/tls.key
+        serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
+    - hosts:
+        - "*"
+      port:
+        name: http
+        number: 80
+        protocol: HTTP
+```
+
+### Without TLS Termination
+
+```yaml
+# Configuration to avoid TLS Termination
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-service
+spec:
+  ports:
+    - port: 8443
+      protocol: TCP
+  selector:
+    app: example
+---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: <ServiceName>-gateway
+  name: example-gateway
 spec:
-  selector:
-    istio: ingressgateway # use istio default ingress gateway
+  selectors:
+    istio: ingressgateway
   servers:
-  - port:
-      number: 443
-      name: https
-      protocol: HTTPS
-    tls:
-      mode: SIMPLE | PASSTHROUGH
-      serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
-      privateKey: /etc/istio/ingressgateway-certs/tls.key
-    hosts:
-    - "*" # allow all incoming requests
-EOF
+    - hosts:
+        - example.com
+      port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: example-virtualservice
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - example-gateway
+  tls:
+    - match:
+        - port: 443
+          sniHosts:
+            - example.com
+      route:
+        - destination:
+            host: example-service
+            port:
+              number: 8443
 ```
+
+### **Reference**
+
+[Secure Gateways - File Mount](https://istio.io/docs/tasks/traffic-management/ingress/secure-ingress-mount/)
+
+[Ingress Gateway without TLS Termination](https://istio.io/docs/tasks/traffic-management/ingress/ingress-sni-passthrough/)
+
+# Use Self-Signed Certificate on Chrome
+
+[Chrome Flags](https://stackoverflow.com/a/31900210)
