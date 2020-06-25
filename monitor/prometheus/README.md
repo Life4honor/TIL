@@ -45,6 +45,11 @@ scrape_configs:
 
 ### K8S Nvidia GPU Exporter
 `DaemonSet` with `dcgm-exporter.yaml` make nodes to expose the 9400 port as an hostport so that the `Prometheus` can fetch the metric data from exposed host port.
+
+```sh
+$ kubectl apply -f dcgm-exporter.yaml
+```
+
 ```yaml
 # dcgm-exporter.yaml
 apiVersion: apps/v1
@@ -79,7 +84,6 @@ spec:
           ports:
             - name: "metrics"
               containerPort: 9400
-              hostPort: 9400
           securityContext:
             runAsNonRoot: false
             runAsUser: 0
@@ -93,24 +97,74 @@ spec:
             path: "/var/lib/kubelet/pod-resources"
 ```
 
-User can deploy `POD`s managed by `DaemonSet` on each nodes with following commands.
-```sh
-$ kubectl apply -f dcgm-exporter.yaml
-```
-
 ### Config target data - GPU Exporter
 `Prometheus` can fetch the metric data from `POD` on each nodes.
 ```yaml
 ...
 # gpu-prometheus.yaml
 scrape_configs:
-  - job_name: nvidia-dl-monitor
-    scheme: http
-    metrics_path: /metrics
-    static_configs:
-      - targets:
-          - <K8S_WORKER_IP_1>:9400
-          - <K8S_WORKER_IP_2>:9400
+  - job_name: nvidia-k8s-monitor
+    kubernetes_sd_configs:
+      - role: pod
+
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        action: keep
+        regex: dcgm-exporter
+      - source_labels: [__meta_kubernetes_pod_ip]
+        action: replace
+        replacement: $1:9400
+        target_label: __address__
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        target_label: kubernetes_pod_node_name
+```
+
+### RBAC
+Prometheus Deployment requires `ServiceAccount`, `ClusterRole`, `ClusterRoleBinding` to fetch metric data from each `POD`s.
+
+```sh
+$ kubectl apply -f prometheus-rbac.yaml
+```
+
+```yaml
+# prometheus-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: default
 ```
 
 ## Monitoring
