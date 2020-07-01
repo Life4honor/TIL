@@ -4,13 +4,11 @@ DNS Server: `<DNS Server>`
 ## DNS 구축
 
 ### Linux - bind9
-* `bind9` 설치
-> [Bind 9 Document](https://bind9.readthedocs.io/en/latest/)
+https://bind9.readthedocs.io/en/latest/
+
 ```sh
 $ sudo apt-get install bind9
 ```
-
-* ...
 
 ## DNS 설정
 
