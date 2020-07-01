@@ -54,6 +54,8 @@ www     IN A     127.0.0.1
 ```
 Defines a name `www.example.org.` with two addresses, `127.0.0.1` and (the IPv6) `::1`.
 
+[DNS zone file tutorial](http://www.microhowto.info/tutorials/dns_zone_file.html)
+
 
 ### Configuration with `forward` plugin
 
