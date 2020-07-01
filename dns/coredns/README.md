@@ -25,6 +25,27 @@ $ dig @localhost -p 1053 a whoami.example.org
 
 [plugin.cfg](https://github.com/coredns/coredns/blob/master/plugin.cfg) is the sample configuration file, located on official github repo.
 
+### Query is Processed
+
+The plugin looks up a response and sends it back to the client. The query processing stops here, no next plugin is called.
+ - `whoami`
+
+### Query is Not Processed
+
+The plugin simply calls the next plugin in the chain. If plugin was the last one, CoreDNS will return SERVFAIL back to the client.
+
+### Query is Processed With Fallthrough
+
+The plugin looks up a response first. If it finds the proper response, it returns that.  If not, it calls the next plugins when `fallthrough` is provided
+
+- `hosts`
+
+### Query is Processed With a Hint
+
+The plugin will process a query, and always call the next plugin with a hint that allows it to return the proper response.
+
+- `prometheus`
+
 ## Corefile
 ### Configuration with `file` plugin
 `Corefile`
