@@ -8,7 +8,21 @@
 $ docker pull minio/minio
 ```
 
-## Run
+### Kubernetes
+
+```sh
+# Install MinIO-Operator with default configuration
+$ kubectl apply -f https://raw.githubusercontent.com/minio/minio-operator/master/minio-operator.yaml
+```
+
+```sh
+# User can leverage kustomize to customize operator configuration
+$ git clone https://github.com/minio/minio-operator
+$ cd operator-deployment
+$ kustomize build | kubectl apply -f -
+```
+
+## Run - Docker
 
 ### Run Standalone MinIO
 
@@ -25,4 +39,10 @@ $ docker run -p 9000:9000 --name minio \
   -v /mnt/data3:/data3 \
   -v /mnt/data4:/data4 \
   minio/minio server /data{1...4}
+```
+
+## Run - Kubernetes
+```sh
+# User can create MinIO instances using the below command.
+$ kubectl apply -f https://raw.githubusercontent.com/minio/minio-operator/master/examples/minioinstance.yaml
 ```
