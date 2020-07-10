@@ -82,3 +82,5 @@ volumeClaimTemplate:
       requests:
         storage: 1Ti
 ```
+
+minioinstance is composed of statefulset, svc, pvc
