@@ -118,7 +118,7 @@ Input -> filter 1 -> ... -> filter N -> Output
 ### Docker
 
 ```sh
-$ docker run -p 24224:24224 -u fluent -v /path/to/dir:/fluentd/log fluentd
+$ docker run -p 24224:24224 -u fluent -v /path/to/dir:/fluentd/log fluentd -c  /fluentd/etc/<conf>
 ```
 
 ### Kubernetes
