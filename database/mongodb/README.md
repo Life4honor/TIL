@@ -20,7 +20,22 @@ TBD
 
 TBD
 
-## K8S Community Operator
+## K8S
 
-### Components
+### Operator
 
+### MongoDB CRD
+
+Standalone
+
+ReplicaSet
+
+ShardedCluster
+
+### MongoDB OPS Manager
+
+Automation
+
+Backup
+
+Monitoring
