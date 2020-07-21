@@ -26,13 +26,19 @@ TBD
 
 ### MongoDB CRD
 
-Standalone
+MongoDB Community Operator
 
-ReplicaSet
+- ReplicaSet
 
-ShardedCluster
+MongoDB Enterprise Operator
 
-### MongoDB OPS Manager
+- Standalone
+
+- ReplicaSet
+
+- ShardedCluster
+
+### MongoDB OPS Manager - Only for Enterprise Operator
 
 Automation
 
