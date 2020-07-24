@@ -99,3 +99,15 @@ resources:
   - registry.yaml
 ```
 
+## Docker Login & Push & Pull
+
+```sh
+# Docker Login
+$ docker login ${REGISTRY_IP}:${PORT}
+
+# Pull Docker IMAGE
+$ docker pull ${IMAGE}
+
+# Push Docker IMAGE
+$ docker push ${IMAGE}
+```
