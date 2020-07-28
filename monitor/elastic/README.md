@@ -117,6 +117,44 @@ $ curl -L -O https://raw.githubusercontent.com/elastic/beats/7.8/deploy/kubernet
 $ kubectl apply -f metricbeat-kubernetes.yaml
 ```
 
+```yaml
+# ConfigMap for Metricbeat DaemonSet
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metricbeat-daemonset-config
+  namespace: kube-system
+  labels:
+    k8s-app: metricbeat
+data:
+  metricbeat.yml: |-
+    metricbeat.config.modules:
+      ...
+
+    output.elasticsearch:
+      hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
+      username: ${ELASTICSEARCH_USERNAME}
+      password: ${ELASTICSEARCH_PASSWORD}
+```
+
+```yaml
+# ConfigMap for modules
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metricbeat-daemonset-modules
+  namespace: kube-system
+  labels:
+    k8s-app: metricbeat
+data:
+  system.yml: |-
+    - module: system
+      ...
+  kubernetes.yml: |-
+    - module: kubernetes
+      ...
+```
+
 ## Reference
 [Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/1.1/index.html)
 
