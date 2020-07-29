@@ -1,6 +1,6 @@
 # Istio-tls-Configuration Guide
 
-## Genereate service certificate and private key
+## Genereate self-signed certificate and private key
 
 1. Create a root certificate and private key to sign the certificate for your services
 
@@ -15,6 +15,18 @@ $ openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=<organiz
 $ openssl req -out ${DOMAIN}.csr -newkey rsa:2048 -nodes -keyout ${DOMAIN}.key -subj "/CN=<commonName>/O=<ORGANIZATION>"
 $ openssl x509 -req -days 365 -CA root.crt -CAkey root.key -set_serial 0 -in ${DOMAIN}.csr -out ${DOMAIN}.crt
 ```
+
+## Certificate signed by AWS Route53
+
+```sh
+$ docker run -it --rm --name certbot -p 80:80 \
+            -v /etc/letsencrypt:/etc/letsencrypt \
+            -v /var/lib/letsencrypt:/var/lib/letsencrypt \
+            -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+            -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+            certbot/dns-route53 certonly
+```
+
 ## Create Secret on istio-system namesapce
 
 ```sh
