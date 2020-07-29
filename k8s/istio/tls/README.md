@@ -16,17 +16,6 @@ $ openssl req -out ${DOMAIN}.csr -newkey rsa:2048 -nodes -keyout ${DOMAIN}.key -
 $ openssl x509 -req -days 365 -CA root.crt -CAkey root.key -set_serial 0 -in ${DOMAIN}.csr -out ${DOMAIN}.crt
 ```
 
-## Certificate signed by AWS Route53
-
-```sh
-$ docker run -it --rm --name certbot -p 80:80 \
-            -v /etc/letsencrypt:/etc/letsencrypt \
-            -v /var/lib/letsencrypt:/var/lib/letsencrypt \
-            -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
-            -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
-            certbot/dns-route53 certonly
-```
-
 ## Create Secret on istio-system namesapce
 
 ```sh
@@ -127,6 +116,60 @@ spec:
             host: example-service
             port:
               number: 8443
+```
+
+## Certificate signed by AWS Route53
+
+Generate certificate signed by route53 with provided docker image.
+
+```sh
+$ docker run -it --rm --name certbot -p 80:80 \
+            -v /etc/letsencrypt:/etc/letsencrypt \
+            -v /var/lib/letsencrypt:/var/lib/letsencrypt \
+            -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+            -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+            certbot/dns-route53 certonly
+```
+
+## Apply TLS on Cluster
+
+Create kubernetes secret with generated cert and private key
+
+```sh
+$ kubectl create -n istio-system secret tls ${SECRET_NAME} --key ${KEY} --cert ${CERT}
+```
+
+Create `patch.yaml` to apply to istio gateway for TLS termination.
+
+```yaml
+# yaml template to patch istio gateway
+spec:
+      selector:
+        istio: ingressgateway
+      servers:
+        - hosts:
+            - "{DOMAIN}"
+          port:
+            name: https
+            number: 443
+            protocol: HTTPS
+          tls:
+            mode: SIMPLE
+            credentialName: {SECRET_NAME}
+        - hosts:
+            - "{DOMAIN}"
+          port:
+            name: http
+            number: 80
+            protocol: HTTP
+          tls:
+            httpsRedirect: true
+```
+
+Apply `patch.yaml` to existing istio gateway with command below
+
+```sh
+$ kubectl patch gw/${GATEWAY} --type='merge' -p 'patch.yaml'
 ```
 
 ### **Reference**
