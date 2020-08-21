@@ -63,7 +63,14 @@ spec:
   containers:
     - name: private-registry
       image: registry:2
+      env:
+        - name: "REGISTRY_HTTP_TLS_CERTIFICATE"
+          value: "/certs/tls.crt"
+        - name: "REGISTRY_HTTP_TLS_KEY"
+          value: "/certs/tls.key"
       volumeMounts:
+        - mountPath: /certs
+          name: registry-cert
         - mountPath: /var/lib/registry
           name: registry-volume
         - mountPath: /etc/docker/registry/
@@ -80,6 +87,10 @@ spec:
     - configMap:
         name: registry-config
       name: registry-config
+    - secret:
+        defaultMode: 420
+        secretName: registry-cert
+      name: registry-cert
 ```
 
 ## Run a Private Registry - Kustomize
